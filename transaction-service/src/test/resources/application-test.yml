@@ -1,0 +1,36 @@
+spring:
+  # Kafka Test Configuration
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: test-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+# Eureka Configuration (disabled for tests)
+eureka:
+  client:
+    enabled: false
+spring:
+  cloud:
+    discovery:
+      enabled: false
+
+# Feign Configuration
+feign:
+  client:
+    config:
+      account-service:
+        connect-timeout: 5000
+        read-timeout: 5000
+
+# Logging Configuration
+logging:
+  level:
+    com.example: DEBUG
+    org.springframework.kafka: DEBUG
+    feign: DEBUG

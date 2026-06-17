@@ -1,0 +1,58 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+    gateway:
+      routes:
+        # 0) Direct auth route - no rewrite
+        - id: auth-route
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+          filters:
+            - RewritePath=/api/auth/(?<segment>.*),/api/auth/${segment}
+
+        # 1) Account Service: /accounts/** -> http://localhost:8081/api/** (direct URL)
+        - id: account-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/accounts/**
+          filters:
+            - RewritePath=/accounts/(?<segment>.*),/api/${segment}
+
+        # 2) Transaction Service: /transactions/** -> http://localhost:8082/api/transactions/** (direct URL)
+        - id: transaction-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/transactions/**
+          filters:
+            - RewritePath=/transactions/(?<segment>.*),/api/transactions/${segment}
+
+        # 3) Notification Service: /notify/** -> http://localhost:8083/api/notifications/** (direct URL)
+        - id: notification-service
+          uri: http://localhost:8083
+          predicates:
+            - Path=/notify/**
+          filters:
+            - RewritePath=/notify/(?<segment>.*),/api/notifications/${segment}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

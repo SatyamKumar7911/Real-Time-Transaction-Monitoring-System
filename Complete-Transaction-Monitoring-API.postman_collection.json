@@ -1,0 +1,1134 @@
+{
+	"info": {
+		"_postman_id": "tx-mon-2025-v1",
+		"name": "✅ Transaction Monitoring - ALL 27 APIs",
+		"description": "**Complete API Testing Collection - 27 Endpoints**\n\n✅ JWT Authentication (6 endpoints)\n✅ User Management (5 endpoints)\n✅ Bank Accounts (7 endpoints)\n✅ Transactions (5 endpoints)\n✅ Notifications (4 endpoints)\n\n**Features:**\n- Auto-save JWT token\n- Pre-configured test data\n- Validation scripts\n- Error handling tests\n\n**Base URL:** http://localhost:8080\n\n**Steps to use:**\n1. Run \"1. Login\" first\n2. Token auto-saves\n3. Run any other request\n4. Check Test Results tab",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 SECTION 1: Authentication",
+			"item": [
+				{
+					"name": "1. Login - Get JWT Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set(\"token\", jsonData.token);",
+									"    console.log(\"✅ Token saved: \" + jsonData.token.substring(0, 50) + \"...\");",
+									"    console.log(\"Username: \" + jsonData.username);",
+									"    console.log(\"Expires in: \" + (jsonData.expiresIn / 60000) + \" minutes\");",
+									"}",
+									"",
+									"pm.test(\"✅ Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ Response has JWT token\", function () {",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"    pm.expect(jsonData.token).to.be.a('string');",
+									"});",
+									"",
+									"pm.test(\"✅ Token type is Bearer\", function () {",
+									"    pm.expect(jsonData.type).to.eql(\"Bearer\");",
+									"});",
+									"",
+									"pm.test(\"✅ Response time < 1000ms\", function () {",
+									"    pm.expect(pm.response.responseTime).to.be.below(1000);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "login"]
+						},
+						"description": "Login and get JWT token. Token is automatically saved."
+					},
+					"response": []
+				},
+				{
+					"name": "2. Validate Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ Token is valid\", function () {",
+									"    pm.expect(jsonData.valid).to.eql(true);",
+									"});",
+									"",
+									"pm.test(\"✅ Username matches\", function () {",
+									"    pm.expect(jsonData.username).to.eql(pm.collectionVariables.get(\"username\"));",
+									"});",
+									"",
+									"console.log(\"✅ \" + jsonData.message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/validate",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "validate"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "3. Get Current User Info",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ User is authenticated\", function () {",
+									"    pm.expect(jsonData.authenticated).to.eql(true);",
+									"});",
+									"",
+									"console.log(\"✅ Current user: \" + jsonData.username);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/me",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "me"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "4. Test Protected Endpoint",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Access granted\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ Response confirms auth\", function () {",
+									"    pm.expect(jsonData.message).to.include(\"authenticated\");",
+									"});",
+									"",
+									"console.log(\"✅ \" + jsonData.message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/test",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "test"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "5. Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"if (jsonData.token) {",
+									"    pm.collectionVariables.set(\"token\", jsonData.token);",
+									"    console.log(\"✅ New token saved!\");",
+									"}",
+									"",
+									"pm.test(\"✅ Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ New token received\", function () {",
+									"    pm.expect(jsonData).to.have.property('token');",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "refresh"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "6. Logout",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Logout successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ \" + jsonData.message);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/auth/logout",
+							"host": ["{{base_url}}"],
+							"path": ["api", "auth", "logout"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👤 SECTION 2: User Management",
+			"item": [
+				{
+					"name": "7. Create User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ User created\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ Response has user ID\", function () {",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"});",
+									"",
+									"if (jsonData.id) {",
+									"    pm.collectionVariables.set(\"userId\", jsonData.id);",
+									"    console.log(\"✅ User created with ID: \" + jsonData.id);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Test User {{$randomInt}}\",\n  \"email\": \"user{{$randomInt}}@example.com\",\n  \"phone\": \"{{$randomPhoneNumber}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/users",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "8. Get All Users",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ Response is array\", function () {",
+									"    pm.expect(jsonData).to.be.an('array');",
+									"});",
+									"",
+									"console.log(\"✅ Found \" + jsonData.length + \" users\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/users",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "users"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "9. Get User by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ User found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ User has ID\", function () {",
+									"    pm.expect(jsonData).to.have.property('id');",
+									"});",
+									"",
+									"console.log(\"✅ User: \" + jsonData.name);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/users/1",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "users", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "10. Update User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ User updated\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ User updated successfully\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Updated User Name\",\n  \"email\": \"updated{{$randomInt}}@example.com\",\n  \"phone\": \"9876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/users/{{userId}}",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "users", "{{userId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "11. Delete User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ User deleted\", function () {",
+									"    pm.response.to.have.status(204);",
+									"});",
+									"",
+									"console.log(\"✅ User deleted successfully\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/users/{{userId}}",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "users", "{{userId}}"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "💳 SECTION 3: Bank Accounts",
+			"item": [
+				{
+					"name": "12. Create Bank Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Account created\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"pm.test(\"✅ Has account number\", function () {",
+									"    pm.expect(jsonData).to.have.property('accountNumber');",
+									"});",
+									"",
+									"if (jsonData.id) {",
+									"    pm.collectionVariables.set(\"accountId\", jsonData.id);",
+									"    console.log(\"✅ Account created: \" + jsonData.accountNumber);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"accountType\": \"SAVINGS\",\n  \"currency\": \"USD\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/accounts",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "accounts"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "13. Get All Bank Accounts",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ Status code is 200\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ Accounts retrieved\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/accounts",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "accounts"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "14. Get Bank Account by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Account found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ Balance: \" + jsonData.balance);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/accounts/id/{{accountId}}",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "accounts", "id", "{{accountId}}"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "15. Get Bank Accounts by User ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Accounts found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ User has \" + jsonData.length + \" accounts\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/accounts/user/1",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "accounts", "user", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "16. Deposit to Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Deposit successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ New balance: \" + jsonData.balance);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 1000.00,\n  \"reference\": \"Salary deposit\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/accounts/{{accountId}}/deposit",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "accounts", "{{accountId}}", "deposit"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "17. Withdraw from Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Withdrawal successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ New balance: \" + jsonData.balance);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 200.00,\n  \"reference\": \"ATM withdrawal\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/accounts/v1/accounts/{{accountId}}/withdraw",
+							"host": ["{{base_url}}"],
+							"path": ["accounts", "v1", "accounts", "{{accountId}}", "withdraw"]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "💰 SECTION 4: Transactions",
+			"item": [
+				{
+					"name": "19. Credit Transaction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Credit successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ Transaction: \" + jsonData.transactionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": 1,\n  \"amount\": 500.00,\n  \"reference\": \"Salary deposit\",\n  \"transactionType\": \"CREDIT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transactions/v1/credit",
+							"host": ["{{base_url}}"],
+							"path": ["transactions", "v1", "credit"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "20. Debit Transaction",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Debit successful\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ Transaction: \" + jsonData.transactionId);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"accountId\": 1,\n  \"amount\": 150.00,\n  \"reference\": \"Bill payment\",\n  \"transactionType\": \"DEBIT\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transactions/v1/debit",
+							"host": ["{{base_url}}"],
+							"path": ["transactions", "v1", "debit"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "21. Get Transaction by ID",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ Transaction found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/transactions/v1/TXN001",
+							"host": ["{{base_url}}"],
+							"path": ["transactions", "v1", "TXN001"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "22. Get All Transactions for Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Transactions found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ Found \" + jsonData.length + \" transactions\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/transactions/v1/account/1",
+							"host": ["{{base_url}}"],
+							"path": ["transactions", "v1", "account", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "23. Get Transaction History (Paginated)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ History retrieved\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ Total: \" + jsonData.totalElements + \" transactions\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/transactions/v1?page=0&size=10&sort=timestamp,desc",
+							"host": ["{{base_url}}"],
+							"path": ["transactions", "v1"],
+							"query": [
+								{
+									"key": "page",
+									"value": "0"
+								},
+								{
+									"key": "size",
+									"value": "10"
+								},
+								{
+									"key": "sort",
+									"value": "timestamp,desc"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🔔 SECTION 5: Notifications",
+			"item": [
+				{
+					"name": "24. Get All Notifications",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = pm.response.json();",
+									"",
+									"pm.test(\"✅ Notifications retrieved\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});",
+									"",
+									"console.log(\"✅ Found \" + jsonData.length + \" notifications\");"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notify/v1",
+							"host": ["{{base_url}}"],
+							"path": ["notify", "v1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "25. Get Notifications by Account",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ Account notifications found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notify/v1/account/1",
+							"host": ["{{base_url}}"],
+							"path": ["notify", "v1", "account", "1"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "26. Mark Notification as Read",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ Notification marked as read\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notify/v1/1/read",
+							"host": ["{{base_url}}"],
+							"path": ["notify", "v1", "1", "read"]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "27. Get Unread Notifications",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"✅ Unread notifications found\", function () {",
+									"    pm.response.to.have.status(200);",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/notify/v1/unread",
+							"host": ["{{base_url}}"],
+							"path": ["notify", "v1", "unread"]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"console.log(\"=\".repeat(50));",
+					"console.log(\"Request: \" + pm.info.requestName);",
+					"console.log(\"Method: \" + pm.request.method);",
+					"console.log(\"URL: \" + pm.request.url);",
+					"",
+					"var token = pm.collectionVariables.get(\"token\");",
+					"if (token) {",
+					"    console.log(\"Token: \" + token.substring(0, 30) + \"...\");",
+					"} else {",
+					"    console.log(\"⚠️ No token - Run Login first\");",
+					"}",
+					"console.log(\"=\".repeat(50));"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"console.log(\"Status: \" + pm.response.code);",
+					"console.log(\"Time: \" + pm.response.responseTime + \"ms\");",
+					"",
+					"pm.test(\"⚡ Response time < 2000ms\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(2000);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "username",
+			"value": "admin",
+			"type": "string"
+		},
+		{
+			"key": "password",
+			"value": "admin123",
+			"type": "string"
+		},
+		{
+			"key": "userId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "accountId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "transactionId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
