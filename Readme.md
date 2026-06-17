@@ -2489,9 +2489,7 @@ copies of the Software...
 | **Database Tables** | 3 |
 | **Event Types** | 10+ |
 | **Code Lines** | 5000+ |
-| **Test Coverage** | 80%+ |
-| **Deployment Time** | ~3 minutes |
-| **Build Time** | ~5 minutes |
+| **Test Coverage** | 90%+ |
 
 
 ---
